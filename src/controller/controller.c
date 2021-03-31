@@ -1,13 +1,13 @@
 #include <8052.h>
 
 #include "utils.h"
+#include "delay.h"
 
 #define LSA P0_5					
 #define LSB P0_6
 #define LSC P0_7
  
 void EXint_Init(void);
-void Delayms(unsigned int);
 void Down2Up(int);		        
 void Up2Down(int);				
 void EXINT0() __interrupt 0;
@@ -20,13 +20,13 @@ void main()
 	LSB=0;
 	LSC=0;						
     utils();
-	Delayms(5000);
+	delay(5000);
 	while(1)					
 	{
-		P1 = 0xff;			
-		Delayms(250);	         
-		P1 = 0x00;				
-		Delayms(250);
+		P1 = 0xAA;			
+		delay(250);	         
+		P1 = 0x55;				
+		delay(250);
 	}                         
 }
  
@@ -39,16 +39,6 @@ void EXint_Init()
 	EA=1;                       
 	EX0=1;                      
 	EX1=1;                      
-}
- 
- 
-void Delayms(unsigned int xms)
-{
-	unsigned int i,j;
-	for(i = xms;i > 0;i--)
-	{
-		for (j = 110;j > 0;j--);
-	}
 }
  
 void EXINT0() __interrupt 0     	
@@ -70,7 +60,7 @@ void Down2Up(int x)
 		for(j=0;j<8;j++)		
 		{	
 			P0 = sel;
-			Delayms(250);		
+			delay(250);		
 			sel =sel<<1; 	
 		}
 		sel=0xfe;						
@@ -86,7 +76,7 @@ void Up2Down(int x)
 		for(j=0;j<8;j++)		
 		{	
 			P0 = sel;
-			Delayms(250);	
+			delay(250);	
 			sel=sel>>1; 	
 		}
 		sel=0x7f;						
