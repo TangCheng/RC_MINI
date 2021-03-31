@@ -5,17 +5,21 @@ extern "C" {
 #endif
 
 // @12.000MHz
-inline void delay1ms()	{
-	byte i = 1;
+inline void delay1ms()
+{
+    byte i = 1;
     byte j = 110;
-	do {
-		while (--j);
-	} while (--i);
+    do {
+        while (--j) {
+            ;
+        }
+    } while (--i);
 }
 
-void delay(word milliseconds) {
+void delay(word milliseconds)
+{
     while (milliseconds--) {
-	    delay1ms();
+        delay1ms();
     }
 }
 
