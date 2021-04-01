@@ -8,6 +8,7 @@
 void main()
 {
     SevenSegmentLedDisplay(0x07);
+    RegisterTickProc(SevenSegmentLedTickProc);
     InitSysTick();
     StartTick();
     utils();

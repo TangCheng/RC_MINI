@@ -18,7 +18,15 @@ void SevenSegmentLedDisplay(byte hex)
     P2_5 = 0;
     P2_6 = 0;
     P2_7 = 0;
-    P2 = 0x1F;
+}
+
+void SevenSegmentLedTickProc() {
+    static byte value = 0x01;
+    P2 = (value << 4) | 0x0F;
+    value <<= 1;
+    if (value == 0x10) {
+        value = 0x01;
+    }
 }
 
 #ifdef __cplusplus
