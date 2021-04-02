@@ -3,10 +3,12 @@
 #include "utils/delay.h"
 #include "ui/led_ui.h"
 #include "sys/tick.h"
+#include "drv/nrf24l01.h"
 
 void main()
 {
-    LedUIDisplay("1234");
+    Nrf24l01Init();
+    LedUIDisplay("1 34");
     RegisterTickProc(LedUITickProc);
     InitSysTick();
     StartTick();
