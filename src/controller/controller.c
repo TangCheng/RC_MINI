@@ -1,9 +1,9 @@
 #include <8052.h>
 
-#include "utils/delay.h"
-#include "ui/led_ui.h"
-#include "sys/tick.h"
 #include "drv/nrf24l01.h"
+#include "sys/tick.h"
+#include "ui/led_ui.h"
+#include "utils/delay.h"
 
 void main()
 {

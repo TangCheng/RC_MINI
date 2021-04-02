@@ -35,7 +35,7 @@ List *List_remove(List *list, void *x)
     if (list && list->first == x) {
         next = list->rest;
         free(list);
-        return next;    
+        return next;
     }
     for (; list; list = next) {
         next = list->rest;
