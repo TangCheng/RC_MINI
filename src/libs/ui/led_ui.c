@@ -12,7 +12,7 @@ extern "C" {
 #define LED_SELECT P2
 #define LED_AMOUNT 4
 
-byte content[LED_AMOUNT] = {'G', 'G', 'G', 'G'};
+byte content[LED_AMOUNT] = {' ', ' ', ' ', ' '};
 byte index = 0;
 
 void LedUITickProc()

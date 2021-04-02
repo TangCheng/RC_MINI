@@ -11,7 +11,8 @@ extern "C" {
 // 共阴数码管显示字符0-F
 byte __code segment[] = {
     0x3f, 0x06, 0x5b, 0x4f, 0x66, 0x6d, 0x7d, 0x07,
-    0x7f, 0x6f, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71};
+    0x7f, 0x6f, 0x77, 0x7c, 0x39, 0x5e, 0x79, 0x71,
+    0x00};
 
 void SevenSegmentLedDisplay(byte hex)
 {
@@ -20,10 +21,9 @@ void SevenSegmentLedDisplay(byte hex)
     } else if (hex >= 'A' && hex <= 'F') {
         hex -= 'A';
     } else {
-        SEGMENT = 0;
-        return;
+        hex = sizeof(segment) - 1;
     }
-    SEGMENT = segment[hex % 16];
+    SEGMENT = segment[hex % sizeof(segment)];
 }
 
 #ifdef __cplusplus
