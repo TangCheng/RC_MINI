@@ -1,6 +1,10 @@
+cmake_policy(SET CMP0076 NEW)
+
 set(headers ${CMAKE_SOURCE_DIR}/include)
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SOURCES)
-
-add_library(common ${SOURCES})
+add_library(common "")
 target_include_directories(common PUBLIC "${headers}")
+
+add_subdirectory(drv)
+add_subdirectory(sys)
+add_subdirectory(utils)

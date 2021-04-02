@@ -1,10 +1,10 @@
-#include "tick.h"
+#include "sys/tick.h"
 
 #include <8052.h>
 #include <stdio.h>
 
 #include "datatype.h"
-#include "list.h"
+#include "utils/list.h"
 
 #ifdef __cplusplus
 extern "C" {
