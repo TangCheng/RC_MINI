@@ -7,4 +7,5 @@ target_include_directories(common PUBLIC "${headers}")
 
 add_subdirectory(drv)
 add_subdirectory(sys)
+add_subdirectory(ui)
 add_subdirectory(utils)

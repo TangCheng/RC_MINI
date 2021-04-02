@@ -1,13 +1,13 @@
 #include <8052.h>
 
 #include "utils/delay.h"
-#include "drv/seven_segment_led.h"
+#include "ui/led_ui.h"
 #include "sys/tick.h"
 
 void main()
 {
-    SevenSegmentLedDisplay(0x07);
-    RegisterTickProc(SevenSegmentLedTickProc);
+    LedUIDisplay("1234");
+    RegisterTickProc(LedUITickProc);
     InitSysTick();
     StartTick();
     while (1) {
