@@ -1,4 +1,5 @@
 #include <8052.h>
+#include <string.h>
 
 #include "datatype.h"
 #include "drv/nrf24l01.h"
@@ -16,10 +17,12 @@ void PairWithReceiver()
     byte n = 0;
     byte cancel = 0;
     byte connecting = 1;
-    byte string[4];
     Nrf24l01PairMode();
 
     tx_order[0] = 0xa0;
+    memcpy(&tx_order[1], hopping, 5);
+    memcpy(&tx_order[6], address, 5);
+    /*
     tx_order[1] = hopping[0];
     tx_order[2] = hopping[1];
     tx_order[3] = hopping[2];
@@ -30,9 +33,11 @@ void PairWithReceiver()
     tx_order[8] = address[2];
     tx_order[9] = address[3];
     tx_order[10] = address[4];
+    */
 
     cancel = 0;
     connecting = 1;
+    LedUIDisplay("0000");
     while (!cancel & connecting)  //把对频信息发给接收机，若收到回复表明通信成功，
     {                             //收不到继续发送
         Nrf24l01TxMode();
@@ -43,7 +48,9 @@ void PairWithReceiver()
         while (1) {
             delay(1);
             if (Nrf24l01BufferRead(rx, 11) == 11) {
+                LedUIDisplay("1111");
                 if (rx[0] == 'O' && rx[1] == 'K') {
+                    LedUIDisplay("2222");
                     cancel = 0;
                     connecting = 0;
                 }

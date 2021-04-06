@@ -69,7 +69,7 @@ static byte SPIReadWrite(byte data)
 {
     byte i = 0;
     for (i = 0; i < 8; i++) {
-        MOSI = (data & 0x80);
+        MOSI = (data & 0x80) == 0 ? 0 : 1;
         SCK = 1;
         data <<= 1;
         data |= MISO;

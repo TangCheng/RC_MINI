@@ -16,6 +16,7 @@ void PairWithController()
     byte t = 0;
     byte connecting = 0;
     Nrf24l01PairMode();
+    Nrf24l01RxMode();
     while (Nrf24l01BufferRead(rx, 11) != 11) {
         ; // 读取接收数据
     }
