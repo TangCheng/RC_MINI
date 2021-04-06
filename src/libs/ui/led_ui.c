@@ -17,9 +17,9 @@ byte index = 0;
 
 void LedUITickProc()
 {
-    LED_SELECT = 0x0F;
+    LED_SELECT = LED_SELECT & 0x0F;
     SevenSegmentLedDisplay(content[index]);
-    LED_SELECT = (0x10 << index) | 0x0F;
+    LED_SELECT = (0x10 << index) | 0x0F & LED_SELECT;
     index++;
     index %= LED_AMOUNT;
 }

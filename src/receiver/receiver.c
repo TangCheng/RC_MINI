@@ -1,84 +1,84 @@
 #include <8052.h>
 
-#define LSA P0_5
-#define LSB P0_6
-#define LSC P0_7
+#include "datatype.h"
+#include "drv/nrf24l01.h"
+#include "sys/tick.h"
+#include "ui/led_ui.h"
+#include "utils/delay.h"
 
-void EXint_Init(void);
-void Delayms(unsigned int);
-void Down2Up(int);
-void Up2Down(int);
-void EXINT0() __interrupt 0;
-void EXINT1() __interrupt 2;
+static byte rx[11];
+static byte tx[11];
+static byte hopping[5];
+static byte address[5];
+
+void PairWithController()
+{
+    byte t = 0;
+    byte connecting = 0;
+    Nrf24l01PairMode();
+    while (Nrf24l01BufferRead(rx, 11) != 11) {
+        ; // 读取接收数据
+    }
+    if (rx[0] == 0xa0) {
+        hopping[0] = rx[1];
+        hopping[1] = rx[2];
+        hopping[2] = rx[3];
+        hopping[3] = rx[4];
+        hopping[4] = rx[5];
+        address[0] = rx[6];
+        address[1] = rx[7];
+        address[2] = rx[8];
+        address[3] = rx[9];
+        address[4] = rx[10];
+    }
+
+    tx[0] = 'O', tx[1] = 'K';
+    connecting = 1;
+    while (connecting) {
+        Nrf24l01TxMode();
+        Nrf24l01BufferWrite(tx, 11);
+        delay(1);
+
+        Nrf24l01RxMode();
+        // Nrf24l01Channel(hopping[0]);
+        Nrf24l01TxAddress(address);
+        Nrf24l01RxAddress(address);
+        while (1) {
+            delay(1);
+            if (Nrf24l01BufferRead(rx, 11) == 11) {
+                connecting = 0;
+                break;
+            }
+            t++;
+            if (t > 100) {
+                t = 0;
+                break;
+            }
+        }
+    }
+    //DATA_save();
+    Nrf24l01WorkMode();
+    Nrf24l01RxAddress(address);
+    Nrf24l01TxAddress(address);
+}
 
 void main()
 {
-    EXint_Init();
-    LSA = 0;
-    LSB = 0;
-    LSC = 0;
+    LedUIDisplay("5678");
+    RegisterTickProc(LedUITickProc);
+    InitSysTick();
+    StartTick();
+    Nrf24l01Init();
+    PairWithController();
     while (1) {
-        P1 = 0xff;
-        Delayms(250);
-        P1 = 0x00;
-        Delayms(250);
+        P2_3 = 1;
+        delay(250);
+        P2_3 = 0;
+        delay(250);
     }
 }
 
-void EXint_Init()
+void Timer0ISR() __interrupt(1)
 {
-    IT0 = 1;
-    IT1 = 0;
-    //	IPH=0x40;
-    PX1 = 1;
-    EA = 1;
-    EX0 = 1;
-    EX1 = 1;
-}
-
-void Delayms(unsigned int xms)
-{
-    unsigned int i, j;
-    for (i = xms; i > 0; i--) {
-        for (j = 110; j > 0; j--)
-            ;
-    }
-}
-
-void EXINT0() __interrupt 0
-{
-    Down2Up(3);
-}
-
-void EXINT1() __interrupt 2
-{
-    Up2Down(3);
-}
-
-void Down2Up(int x)
-{
-    int i, j;
-    unsigned char sel = 0xfe;
-    for (i = 0; i < x; i++) {
-        for (j = 0; j < 8; j++) {
-            P0 = sel;
-            Delayms(250);
-            sel = sel << 1;
-        }
-        sel = 0xfe;
-    }
-}
-
-void Up2Down(int x)
-{
-    int i, j;
-    unsigned char sel = 0x7f;
-    for (i = 0; i < x; i++) {
-        for (j = 0; j < 8; j++) {
-            P0 = sel;
-            Delayms(250);
-            sel = sel >> 1;
-        }
-        sel = 0x7f;
-    }
+    TickTimerProc();
 }
