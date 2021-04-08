@@ -160,7 +160,7 @@ static void Nrf24l01Power(byte power)  //发射功率设置
     CE = 1;
 }
 
-static void Nrf24l01Size(byte size)
+void Nrf24l01Size(byte size)
 {
     CE = 0;
     Nrf24l01RegisterWrite(REGISTER_RX_PAYLOAD_WIDTH_P0, size);
@@ -194,7 +194,6 @@ void Nrf24l01Init(void)
     Nrf24l01RegisterWrite(REGISTER_SETUP_AUTO_RETRANS, 0x00);  //禁止 自动重发
     Nrf24l01ChangeTransceiverMode(TX_MODE);
     Nrf24l01WorkMode();
-    Nrf24l01Size(11);
 }
 
 void Nrf24l01PairMode(void)

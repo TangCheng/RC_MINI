@@ -18,11 +18,10 @@ void PairWithReceiver()
 {
     byte n = 0;
     byte connecting = 1;
-    Nrf24l01PairMode();
-
     pairPayload.header = PAYLOAD_NEGOTIATION_HEADER;
 
-    connecting = 1;
+    Nrf24l01Size(PAYLOAD_LENGTH);
+    Nrf24l01PairMode();
     while (connecting) {
         // 把对频信息发给接收机，若收到回复表明通信成功，收不到继续发送
         Nrf24l01ChangeTransceiverMode(TX_MODE);

@@ -26,6 +26,7 @@ void CallTickProc(void **x, void *cl)
         TickProc tickProc = (TickProc)*x;
         tickProc();
     }
+    cl = cl;
 }
 
 inline void TickTimerProc()
@@ -37,8 +38,8 @@ inline void TickTimerProc()
 
 void InitSysTick()
 {
-    // Timer1, timer mode, work mode 1
-    TMOD = 0x01;
+    // Timer0, timer mode, work mode 1
+    TMOD = (TMOD & 0xF0) | 0x01;
     TH0 = TIMER_HIGH_VALUE;
     TL0 = TIMER_LOW_VALUE;
     // Enable timer interrupt

@@ -15,6 +15,7 @@ enum Nrf24l01TransceiverMode {
 void Nrf24l01Init(void);
 void Nrf24l01PairMode(void);
 void Nrf24l01WorkMode(void);
+void Nrf24l01Size(byte size);
 void Nrf24l01ChangeTransceiverMode(enum Nr24l01TransceiverMode mode);
 void Nrf24l01ChangeTransceiverAddress(enum Nrf24l01TransceiverMode mode,
                                       byte *address, byte length);

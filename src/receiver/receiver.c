@@ -15,6 +15,7 @@ static struct DataPayload dataPayload;
 
 void PairWithController()
 {
+    Nrf24l01Size(PAYLOAD_LENGTH);
     Nrf24l01PairMode();
     Nrf24l01ChangeTransceiverMode(RX_MODE);
     while (1) {
