@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-void PairWithReceiver();
+void CommunicationInit();
+bool PairWithReceiver();
 void SendControlData(byte throttle, byte steering);
 
 #ifdef __cplusplus

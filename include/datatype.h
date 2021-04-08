@@ -7,6 +7,10 @@ extern "C" {
 
 typedef unsigned char byte;
 typedef unsigned int word;
+typedef enum Bool {
+    false,
+    true
+} bool;
 
 #ifdef __cplusplus
 }
