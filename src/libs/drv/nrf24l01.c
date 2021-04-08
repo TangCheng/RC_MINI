@@ -109,7 +109,7 @@ void Nrf24l01BufferWrite(byte *buffer, byte length)
     CSN = 1;
 }
 
-int Nrf24l01BufferRead(byte *buffer, byte length)
+bool Nrf24l01BufferRead(byte *buffer, byte length)
 {
     byte i = 0;
     if (IRQ == 0) {
@@ -123,9 +123,9 @@ int Nrf24l01BufferRead(byte *buffer, byte length)
         CE = 0;
         Nrf24l01RegisterWrite(REGISTER_STATUS, 0x40);  //清除RX中断信号
         CE = 1;
-        return length;
+        return true;
     } else {
-        return -1;
+        return false;
     }
 }
 

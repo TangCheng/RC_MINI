@@ -1,6 +1,8 @@
 #ifndef __TICK_H__
 #define __TICK_H__
 
+#include "datatype.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -8,8 +10,8 @@ extern "C" {
 typedef void (*TickProc)(void);
 
 void SysTickInit();
-int RegisterTickProc(TickProc tickProc);
-int UnregisterTickProc(TickProc tickProc);
+bool RegisterTickProc(TickProc tickProc);
+bool UnregisterTickProc(TickProc tickProc);
 void StartTick();
 void StopTick();
 inline void TickTimerProc(void);

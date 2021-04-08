@@ -9,9 +9,9 @@ extern "C" {
 
 void I2cStart();
 void I2cStop();
-int I2cSendByte(byte data);
+bool I2cSendByte(byte data);
 byte I2cReceiveByte();
-void I2cAcknowledge(byte ack);
+void I2cAcknowledge(bool ack);
 
 #ifdef __cplusplus
 }

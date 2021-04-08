@@ -47,30 +47,30 @@ void SysTickInit()
     EA = 1;
 }
 
-int RegisterTickProc(TickProc tickProc)
+bool RegisterTickProc(TickProc tickProc)
 {
     if (tickProcCount >= MAX_TICK_PROC) {
-        return -1;
+        return false;
     }
 
     if (tickProc == NULL) {
-        return -1;
+        return false;
     }
 
     tickProcs = List_push(tickProcs, (void *)tickProc);
     tickProcCount++;
-    return 0;
+    return true;
 }
 
-int UnregisterTickProc(TickProc tickProc)
+bool UnregisterTickProc(TickProc tickProc)
 {
     if (tickProc == NULL) {
-        return -1;
+        return false;
     }
 
     tickProcs = List_remove(tickProcs, (void *)tickProc);
     tickProcCount--;
-    return 0;
+    return true;
 }
 
 void StartTick()

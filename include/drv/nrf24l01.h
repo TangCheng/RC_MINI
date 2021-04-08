@@ -19,7 +19,7 @@ void Nrf24l01Size(byte size);
 void Nrf24l01ChangeTransceiverMode(enum Nr24l01TransceiverMode mode);
 void Nrf24l01ChangeTransceiverAddress(enum Nrf24l01TransceiverMode mode,
                                       byte *address, byte length);
-int Nrf24l01BufferRead(byte *buffer, byte length);
+bool Nrf24l01BufferRead(byte *buffer, byte length);
 void Nrf24l01BufferWrite(byte *buffer, byte length);
 
 #ifdef __cplusplus

@@ -48,10 +48,10 @@ void I2cStop()
     NOP;
 }
 
-int I2cSendByte(byte data)
+bool I2cSendByte(byte data)
 {
     byte i = 0;
-    int ack = 0;
+    bool ack = true;
 
     for (i = 0; i < 8; i++) /* 要传送的数据长度为8位 */
     {
@@ -76,9 +76,9 @@ int I2cSendByte(byte data)
     NOP;
     NOP;
     if (SDA == 1) {
-        ack = -1;
+        ack = false;
     } else {
-        ack = 1; /* 判断是否接收到应答信号 */
+        ack = true; /* 判断是否接收到应答信号 */
     }
     SCL = 0;
     NOP;
@@ -114,9 +114,9 @@ byte I2cReceiveByte()
     return data;
 }
 
-void I2cAcknowledge(byte ack)
+void I2cAcknowledge(bool ack)
 {
-    if (ack == 0) {
+    if (ack == true) {
         SDA = 0; /* 在此发出应答或非应答信号 */
     } else {
         SDA = 1; /* 0为发出应答，1为非应答信号 */
