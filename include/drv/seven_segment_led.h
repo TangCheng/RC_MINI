@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+void SevenSegmentLedInit();
 void SevenSegmentLedDisplay(byte hex);
 
 #ifdef __cplusplus

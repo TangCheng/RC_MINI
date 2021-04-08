@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 #define MAX_TICK_PROC 5
-#define TICK 5  // milliseconds
+#define TICK 2  // milliseconds
 // @12MHz, 12T, 2^16 - tick * 1000
 #define TIMER_VALUE ((1L << 16) - (TICK * 1000L))
 #define TIMER_HIGH_VALUE (byte)(TIMER_VALUE >> 8)

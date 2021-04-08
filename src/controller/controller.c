@@ -1,57 +1,39 @@
 #include <8052.h>
 #include <string.h>
 
+#include "common.h"
 #include "datatype.h"
+#include "drv/buzzer.h"
 #include "drv/nrf24l01.h"
+#include "drv/pcf8591.h"
 #include "sys/tick.h"
 #include "ui/led_ui.h"
 #include "utils/delay.h"
 
-static byte tx_order[11];
-static byte rx[11];
-static byte hopping[5];
-static byte address[5];
+static byte buffer[PAYLOAD_LENGTH];
+static struct PairPayload pairPayload;
+static struct DataPayload dataPayload;
 
 void PairWithReceiver()
 {
     byte n = 0;
-    byte cancel = 0;
     byte connecting = 1;
     Nrf24l01PairMode();
 
-    tx_order[0] = 0xa0;
-    memcpy(&tx_order[1], hopping, 5);
-    memcpy(&tx_order[6], address, 5);
-    /*
-    tx_order[1] = hopping[0];
-    tx_order[2] = hopping[1];
-    tx_order[3] = hopping[2];
-    tx_order[4] = hopping[3];
-    tx_order[5] = hopping[4];
-    tx_order[6] = address[0];
-    tx_order[7] = address[1];
-    tx_order[8] = address[2];
-    tx_order[9] = address[3];
-    tx_order[10] = address[4];
-    */
+    pairPayload.header = PAYLOAD_NEGOTIATION_HEADER;
 
-    cancel = 0;
     connecting = 1;
-    LedUIDisplay("0000");
-    while (!cancel & connecting)  //把对频信息发给接收机，若收到回复表明通信成功，
-    {                             //收不到继续发送
-        Nrf24l01TxMode();
-        Nrf24l01BufferWrite(tx_order, 11);
+    while (connecting) {
+        // 把对频信息发给接收机，若收到回复表明通信成功，收不到继续发送
+        Nrf24l01ChangeTransceiverMode(TX_MODE);
+        Nrf24l01BufferWrite((byte *)&pairPayload, sizeof(pairPayload));
         delay(1);
-        Nrf24l01RxMode();
+        Nrf24l01ChangeTransceiverMode(RX_MODE);
 
         while (1) {
             delay(1);
-            if (Nrf24l01BufferRead(rx, 11) == 11) {
-                LedUIDisplay("1111");
-                if (rx[0] == 'O' && rx[1] == 'K') {
-                    LedUIDisplay("2222");
-                    cancel = 0;
+            if (Nrf24l01BufferRead(buffer, sizeof(buffer)) == PAYLOAD_LENGTH) {
+                if (buffer[0] == 'O' && buffer[1] == 'K') {
                     connecting = 0;
                 }
             }
@@ -64,24 +46,43 @@ void PairWithReceiver()
         }
     }
 
+    Nrf24l01ChangeTransceiverMode(TX_MODE);
     Nrf24l01WorkMode();
-    Nrf24l01TxAddress(address);
-    Nrf24l01RxAddress(address);
+    Nrf24l01ChangeTransceiverAddress(TX_MODE, pairPayload.address, sizeof(pairPayload.address));
+    Nrf24l01ChangeTransceiverAddress(RX_MODE, pairPayload.address, sizeof(pairPayload.address));
+    BuzzerBeep(250);
 }
 
 void main()
 {
-    LedUIDisplay("1234");
+    byte data = 0;
+    LedUIInit();
+    LedUIDisplay("12345678");
     RegisterTickProc(LedUITickProc);
     InitSysTick();
     StartTick();
     Nrf24l01Init();
+    pairPayload.address[0] = 'M';
+    pairPayload.address[1] = 'I';
+    pairPayload.address[2] = 'N';
+    pairPayload.address[3] = 'I';
+    pairPayload.address[4] = 'V';
+    dataPayload.header = PAYLOAD_DATA_HEADER;
     PairWithReceiver();
     while (1) {
-        P2_3 = 1;
-        delay(250);
-        P2_3 = 0;
-        delay(250);
+        data = Pcf8591AdConversion(0);
+        buffer[0] = (data / 100) + '0';
+        buffer[1] = ((data % 100) / 10) + '0';
+        buffer[2] = (data % 10) + '0';
+        dataPayload.throttle = data;
+        data = Pcf8591AdConversion(1);
+        buffer[4] = (data / 100) + '0';
+        buffer[5] = ((data % 100) / 10) + '0';
+        buffer[6] = (data % 10) + '0';
+        LedUIDisplay(buffer);
+        dataPayload.steering = data;
+        Nrf24l01BufferWrite((byte *)&dataPayload, sizeof(dataPayload));
+        delay(5);
     }
 }
 

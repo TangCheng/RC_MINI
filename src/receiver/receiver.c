@@ -1,81 +1,65 @@
 #include <8052.h>
+#include <string.h>
 
+#include "common.h"
 #include "datatype.h"
+#include "drv/buzzer.h"
 #include "drv/nrf24l01.h"
 #include "sys/tick.h"
 #include "ui/led_ui.h"
 #include "utils/delay.h"
 
-static byte rx[11];
-static byte tx[11];
-static byte hopping[5];
-static byte address[5];
+static byte buffer[PAYLOAD_LENGTH];
+static struct PairPayload pairPayload;
+static struct DataPayload dataPayload;
 
 void PairWithController()
 {
-    byte t = 0;
-    byte connecting = 0;
     Nrf24l01PairMode();
-    Nrf24l01RxMode();
-    while (Nrf24l01BufferRead(rx, 11) != 11) {
-        ; // 读取接收数据
-    }
-    if (rx[0] == 0xa0) {
-        hopping[0] = rx[1];
-        hopping[1] = rx[2];
-        hopping[2] = rx[3];
-        hopping[3] = rx[4];
-        hopping[4] = rx[5];
-        address[0] = rx[6];
-        address[1] = rx[7];
-        address[2] = rx[8];
-        address[3] = rx[9];
-        address[4] = rx[10];
-    }
-
-    tx[0] = 'O', tx[1] = 'K';
-    connecting = 1;
-    while (connecting) {
-        Nrf24l01TxMode();
-        Nrf24l01BufferWrite(tx, 11);
-        delay(1);
-
-        Nrf24l01RxMode();
-        // Nrf24l01Channel(hopping[0]);
-        Nrf24l01TxAddress(address);
-        Nrf24l01RxAddress(address);
-        while (1) {
-            delay(1);
-            if (Nrf24l01BufferRead(rx, 11) == 11) {
-                connecting = 0;
-                break;
-            }
-            t++;
-            if (t > 100) {
-                t = 0;
+    Nrf24l01ChangeTransceiverMode(RX_MODE);
+    while (1) {
+        // 读取接收数据
+        if (Nrf24l01BufferRead((byte *)&pairPayload, sizeof(pairPayload)) == PAYLOAD_LENGTH) {
+            if (pairPayload.header == PAYLOAD_NEGOTIATION_HEADER) {
                 break;
             }
         }
     }
-    //DATA_save();
+
+    strcpy(buffer, "OK");
+    Nrf24l01ChangeTransceiverMode(TX_MODE);
+    Nrf24l01BufferWrite(buffer, sizeof(buffer));
+    delay(1);
+
+    Nrf24l01ChangeTransceiverMode(RX_MODE);
     Nrf24l01WorkMode();
-    Nrf24l01RxAddress(address);
-    Nrf24l01TxAddress(address);
+    Nrf24l01ChangeTransceiverAddress(TX_MODE, pairPayload.address, sizeof(pairPayload.address));
+    Nrf24l01ChangeTransceiverAddress(RX_MODE, pairPayload.address, sizeof(pairPayload.address));
+    BuzzerBeep(250);
 }
 
 void main()
 {
-    LedUIDisplay("5678");
+    LedUIInit();
+    LedUIDisplay("90ABCDEF");
     RegisterTickProc(LedUITickProc);
     InitSysTick();
     StartTick();
     Nrf24l01Init();
     PairWithController();
     while (1) {
-        P2_3 = 1;
-        delay(250);
-        P2_3 = 0;
-        delay(250);
+        if (Nrf24l01BufferRead((byte *)&dataPayload, sizeof(dataPayload)) == PAYLOAD_LENGTH) {
+            if (dataPayload.header == PAYLOAD_DATA_HEADER) {
+                buffer[0] = (dataPayload.throttle / 100) + '0';
+                buffer[1] = ((dataPayload.throttle % 100) / 10) + '0';
+                buffer[2] = (dataPayload.throttle % 10) + '0';
+                buffer[4] = (dataPayload.steering / 100) + '0';
+                buffer[5] = ((dataPayload.steering % 100) / 10) + '0';
+                buffer[6] = (dataPayload.steering % 10) + '0';
+                LedUIDisplay(buffer);
+            }
+        }
+        delay(5);
     }
 }
 

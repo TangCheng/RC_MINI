@@ -5,6 +5,7 @@ set(headers ${CMAKE_SOURCE_DIR}/include)
 add_library(common "")
 target_include_directories(common PUBLIC "${headers}")
 
+add_subdirectory(bus)
 add_subdirectory(drv)
 add_subdirectory(sys)
 add_subdirectory(ui)

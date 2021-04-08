@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 void LedUITickProc();
+void LedUIInit();
 void LedUIDisplay(byte *string);
 
 #ifdef __cplusplus

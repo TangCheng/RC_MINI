@@ -56,6 +56,9 @@ static byte __code powerTable[] = {
     0x07   // 0db
 };
 
+#define _TX_MODE 0b00001010
+#define _RX_MODE 0b00111011
+
 #define PAIR_CHANNEL 33
 #define PAIR_POWER 0
 static byte __code pairAddress[] = {
@@ -63,7 +66,6 @@ static byte __code pairAddress[] = {
 
 #define WORK_CHANNEL 66
 #define WORK_POWER 3
-static byte address[5];
 
 static byte SPIReadWrite(byte data)
 {
@@ -127,17 +129,19 @@ int Nrf24l01BufferRead(byte *buffer, byte length)
     }
 }
 
-void Nrf24l01TxMode(void)
+void Nrf24l01ChangeTransceiverMode(enum Nr24l01TransceiverMode mode)
 {
     CE = 0;
-    Nrf24l01RegisterWrite(REGISTER_CONFIG, 0x0a);
-    CE = 1;
-}
-
-void Nrf24l01RxMode(void)
-{
-    CE = 0;
-    Nrf24l01RegisterWrite(REGISTER_CONFIG, 0x3b);  //CRC,8 bit,Power on,RX
+    switch (mode) {
+    case TX_MODE:
+        Nrf24l01RegisterWrite(REGISTER_CONFIG, _TX_MODE);
+        break;
+    case RX_MODE:
+        Nrf24l01RegisterWrite(REGISTER_CONFIG, _RX_MODE);
+        break;
+    default:
+        break;
+    }
     CE = 1;
 }
 
@@ -163,27 +167,21 @@ static void Nrf24l01Size(byte size)
     CE = 1;
 }
 
-void Nrf24l01TxAddress(byte *data)
+void Nrf24l01ChangeTransceiverAddress(enum Nrf24l01TransceiverMode mode,
+                                      byte *address, byte length)
 {
+    byte command = COMMAND_WRITE_REGISTER;
+    byte i = 0;
     CSN = 0;
-    SPIReadWrite(COMMAND_WRITE_REGISTER | REGISTER_TX_ADDRESS);
-    SPIReadWrite(data[0]);
-    SPIReadWrite(data[1]);
-    SPIReadWrite(data[2]);
-    SPIReadWrite(data[3]);
-    SPIReadWrite(data[4]);
-    CSN = 1;
-}
-
-void Nrf24l01RxAddress(byte *data)
-{
-    CSN = 0;
-    SPIReadWrite(COMMAND_WRITE_REGISTER | REGISTER_RX_ADDRESS_P0);
-    SPIReadWrite(data[0]);
-    SPIReadWrite(data[1]);
-    SPIReadWrite(data[2]);
-    SPIReadWrite(data[3]);
-    SPIReadWrite(data[4]);
+    if (mode == TX_MODE) {
+        command |= REGISTER_TX_ADDRESS;
+    } else if (mode == RX_MODE) {
+        command |= REGISTER_RX_ADDRESS_P0;
+    }
+    SPIReadWrite(command);
+    for (i = 0; i < length; i++) {
+        SPIReadWrite(address[i]);
+    }
     CSN = 1;
 }
 
@@ -194,30 +192,23 @@ void Nrf24l01Init(void)
     Nrf24l01RegisterWrite(REGISTER_ENABLE_AUTO_ACK, 0x00);     //禁止 自动应答
     Nrf24l01RegisterWrite(REGISTER_ENABLE_RX_ADDRESS, 0x01);   //允许 P0信道
     Nrf24l01RegisterWrite(REGISTER_SETUP_AUTO_RETRANS, 0x00);  //禁止 自动重发
-    Nrf24l01TxMode();
-    Nrf24l01Channel(WORK_CHANNEL);
-    Nrf24l01Power(WORK_POWER);
+    Nrf24l01ChangeTransceiverMode(TX_MODE);
+    Nrf24l01WorkMode();
     Nrf24l01Size(11);
-    Nrf24l01TxAddress(address);
-    Nrf24l01RxAddress(address);
 }
 
 void Nrf24l01PairMode(void)
 {
     Nrf24l01Channel(PAIR_CHANNEL);
     Nrf24l01Power(PAIR_POWER);
-    Nrf24l01TxAddress(pairAddress);
-    Nrf24l01RxAddress(pairAddress);
+    Nrf24l01ChangeTransceiverAddress(TX_MODE, pairAddress, sizeof(pairAddress));
+    Nrf24l01ChangeTransceiverAddress(RX_MODE, pairAddress, sizeof(pairAddress));
 }
 
 void Nrf24l01WorkMode(void)
 {
     Nrf24l01Channel(WORK_CHANNEL);
     Nrf24l01Power(WORK_POWER);
-}
-
-void Nrf24l01Send(void)
-{
 }
 
 #ifdef __cplusplus
