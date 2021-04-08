@@ -7,21 +7,22 @@
 extern "C" {
 #endif
 
-#define PAYLOAD_LENGTH 11
+#define PAYLOAD_LENGTH sizeof(struct Payload)
 #define PAYLOAD_NEGOTIATION_HEADER 0xA0
-#define PAYLOAD_DATA_HEADER 0xA1
+#define PAYLOAD_CONTROL_DATA_HEADER 0xA1
 
-struct PairPayload {
+struct Payload {
     byte header;
-    byte hopping[5];
-    byte address[5];
-};
-
-struct DataPayload {
-    byte header;
-    byte throttle;
-    byte steering;
-    byte reserved[8];
+    union {
+        struct {
+            byte channel[5];
+            byte address[5];
+        };
+        struct {
+            byte throttle;
+            byte steering;
+        };
+    };
 };
 
 #ifdef __cplusplus

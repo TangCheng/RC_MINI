@@ -1,5 +1,4 @@
 #include <8052.h>
-#include <string.h>
 
 #include "common.h"
 #include "datatype.h"
@@ -11,21 +10,19 @@
 #include "utils/delay.h"
 
 static byte buffer[PAYLOAD_LENGTH];
-static struct PairPayload pairPayload;
-static struct DataPayload dataPayload;
+static struct Payload payload;
 
 void PairWithReceiver()
 {
     byte n = 0;
     byte connecting = 1;
-    pairPayload.header = PAYLOAD_NEGOTIATION_HEADER;
 
     Nrf24l01Size(PAYLOAD_LENGTH);
     Nrf24l01PairMode();
     while (connecting) {
         // 把对频信息发给接收机，若收到回复表明通信成功，收不到继续发送
         Nrf24l01ChangeTransceiverMode(TX_MODE);
-        Nrf24l01BufferWrite((byte *)&pairPayload, sizeof(pairPayload));
+        Nrf24l01BufferWrite((byte *)&payload, PAYLOAD_LENGTH);
         delay(1);
         Nrf24l01ChangeTransceiverMode(RX_MODE);
 
@@ -47,8 +44,8 @@ void PairWithReceiver()
 
     Nrf24l01ChangeTransceiverMode(TX_MODE);
     Nrf24l01WorkMode();
-    Nrf24l01ChangeTransceiverAddress(TX_MODE, pairPayload.address, sizeof(pairPayload.address));
-    Nrf24l01ChangeTransceiverAddress(RX_MODE, pairPayload.address, sizeof(pairPayload.address));
+    Nrf24l01ChangeTransceiverAddress(TX_MODE, payload.address, sizeof(payload.address));
+    Nrf24l01ChangeTransceiverAddress(RX_MODE, payload.address, sizeof(payload.address));
     BuzzerBeep(250);
 }
 
@@ -61,26 +58,27 @@ void main()
     InitSysTick();
     StartTick();
     Nrf24l01Init();
-    pairPayload.address[0] = 'M';
-    pairPayload.address[1] = 'I';
-    pairPayload.address[2] = 'N';
-    pairPayload.address[3] = 'I';
-    pairPayload.address[4] = 'V';
-    dataPayload.header = PAYLOAD_DATA_HEADER;
+    payload.header = PAYLOAD_NEGOTIATION_HEADER;
+    payload.address[0] = 'M';
+    payload.address[1] = 'I';
+    payload.address[2] = 'N';
+    payload.address[3] = 'I';
+    payload.address[4] = 'V';
     PairWithReceiver();
+    payload.header = PAYLOAD_CONTROL_DATA_HEADER;
     while (1) {
         data = Pcf8591AdConversion(0);
         buffer[0] = (data / 100) + '0';
         buffer[1] = ((data % 100) / 10) + '0';
         buffer[2] = (data % 10) + '0';
-        dataPayload.throttle = data;
+        payload.throttle = data;
         data = Pcf8591AdConversion(1);
         buffer[4] = (data / 100) + '0';
         buffer[5] = ((data % 100) / 10) + '0';
         buffer[6] = (data % 10) + '0';
         LedUIDisplay(buffer);
-        dataPayload.steering = data;
-        Nrf24l01BufferWrite((byte *)&dataPayload, sizeof(dataPayload));
+        payload.steering = data;
+        Nrf24l01BufferWrite((byte *)&payload, PAYLOAD_LENGTH);
         delay(5);
     }
 }

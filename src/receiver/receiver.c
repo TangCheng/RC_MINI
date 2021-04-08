@@ -1,5 +1,4 @@
 #include <8052.h>
-#include <string.h>
 
 #include "common.h"
 #include "datatype.h"
@@ -9,9 +8,9 @@
 #include "ui/led_ui.h"
 #include "utils/delay.h"
 
-static byte buffer[PAYLOAD_LENGTH];
-static struct PairPayload pairPayload;
-static struct DataPayload dataPayload;
+static byte buffer[PAYLOAD_LENGTH] = {
+    'O', 'K'};
+static struct Payload payload;
 
 void PairWithController()
 {
@@ -20,22 +19,21 @@ void PairWithController()
     Nrf24l01ChangeTransceiverMode(RX_MODE);
     while (1) {
         // 读取接收数据
-        if (Nrf24l01BufferRead((byte *)&pairPayload, sizeof(pairPayload)) == PAYLOAD_LENGTH) {
-            if (pairPayload.header == PAYLOAD_NEGOTIATION_HEADER) {
+        if (Nrf24l01BufferRead((byte *)&payload, PAYLOAD_LENGTH) == PAYLOAD_LENGTH) {
+            if (payload.header == PAYLOAD_NEGOTIATION_HEADER) {
                 break;
             }
         }
     }
 
-    strcpy(buffer, "OK");
     Nrf24l01ChangeTransceiverMode(TX_MODE);
     Nrf24l01BufferWrite(buffer, sizeof(buffer));
     delay(1);
 
     Nrf24l01ChangeTransceiverMode(RX_MODE);
     Nrf24l01WorkMode();
-    Nrf24l01ChangeTransceiverAddress(TX_MODE, pairPayload.address, sizeof(pairPayload.address));
-    Nrf24l01ChangeTransceiverAddress(RX_MODE, pairPayload.address, sizeof(pairPayload.address));
+    Nrf24l01ChangeTransceiverAddress(TX_MODE, payload.address, sizeof(payload.address));
+    Nrf24l01ChangeTransceiverAddress(RX_MODE, payload.address, sizeof(payload.address));
     BuzzerBeep(250);
 }
 
@@ -49,14 +47,14 @@ void main()
     Nrf24l01Init();
     PairWithController();
     while (1) {
-        if (Nrf24l01BufferRead((byte *)&dataPayload, sizeof(dataPayload)) == PAYLOAD_LENGTH) {
-            if (dataPayload.header == PAYLOAD_DATA_HEADER) {
-                buffer[0] = (dataPayload.throttle / 100) + '0';
-                buffer[1] = ((dataPayload.throttle % 100) / 10) + '0';
-                buffer[2] = (dataPayload.throttle % 10) + '0';
-                buffer[4] = (dataPayload.steering / 100) + '0';
-                buffer[5] = ((dataPayload.steering % 100) / 10) + '0';
-                buffer[6] = (dataPayload.steering % 10) + '0';
+        if (Nrf24l01BufferRead((byte *)&payload, PAYLOAD_LENGTH) == PAYLOAD_LENGTH) {
+            if (payload.header == PAYLOAD_CONTROL_DATA_HEADER) {
+                buffer[0] = (payload.throttle / 100) + '0';
+                buffer[1] = ((payload.throttle % 100) / 10) + '0';
+                buffer[2] = (payload.throttle % 10) + '0';
+                buffer[4] = (payload.steering / 100) + '0';
+                buffer[5] = ((payload.steering % 100) / 10) + '0';
+                buffer[6] = (payload.steering % 10) + '0';
                 LedUIDisplay(buffer);
             }
         }
