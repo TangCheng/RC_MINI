@@ -2,7 +2,6 @@
 
 #include "common.h"
 #include "datatype.h"
-#include "drv/nrf24l01.h"
 #include "drv/pcf8591.h"
 #include "rf_comm.h"
 #include "sys/tick.h"
@@ -20,7 +19,6 @@ void main()
     RegisterTickProc(LedUITickProc);
     InitSysTick();
     StartTick();
-    Nrf24l01Init();
     PairWithReceiver();
     while (1) {
         throttle = Pcf8591AdConversion(0);

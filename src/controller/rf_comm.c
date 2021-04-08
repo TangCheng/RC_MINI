@@ -21,6 +21,7 @@ void PairWithReceiver()
     byte connecting = 1;
     struct Payload payload;
 
+    Nrf24l01Init();
     Nrf24l01Size(PAYLOAD_LENGTH);
     Nrf24l01PairMode();
     payload.header = PAYLOAD_NEGOTIATION_HEADER;
