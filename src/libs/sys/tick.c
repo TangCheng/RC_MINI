@@ -36,7 +36,7 @@ inline void TickTimerProc()
     List_map(tickProcs, CallTickProc, NULL);
 }
 
-void InitSysTick()
+void SysTickInit()
 {
     // Timer0, timer mode, work mode 1
     TMOD = (TMOD & 0xF0) | 0x01;

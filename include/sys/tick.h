@@ -7,7 +7,7 @@ extern "C" {
 
 typedef void (*TickProc)(void);
 
-void InitSysTick();
+void SysTickInit();
 int RegisterTickProc(TickProc tickProc);
 int UnregisterTickProc(TickProc tickProc);
 void StartTick();

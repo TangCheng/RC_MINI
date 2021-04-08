@@ -23,9 +23,8 @@ void main()
     byte steering = 0;
     LedUIInit();
     CommunicationInit();
-    LedUIDisplay("12345678");
+    SysTickInit();
     RegisterTickProc(LedUITickProc);
-    InitSysTick();
     StartTick();
     state = PAIRING;
     while (1) {

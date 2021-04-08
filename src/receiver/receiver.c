@@ -41,7 +41,7 @@ void main()
     LedUIInit();
     LedUIDisplay("90ABCDEF");
     RegisterTickProc(LedUITickProc);
-    InitSysTick();
+    SysTickInit();
     StartTick();
     Nrf24l01Init();
     PairWithController();
