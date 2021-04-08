@@ -10,6 +10,7 @@ extern "C" {
 #define PAYLOAD_LENGTH sizeof(struct Payload)
 #define PAYLOAD_NEGOTIATION_HEADER 0xA0
 #define PAYLOAD_CONTROL_DATA_HEADER 0xA1
+#define PAYLOAD_RECEIVER_ACK_HEADER 0xA3
 
 struct Payload {
     byte header;

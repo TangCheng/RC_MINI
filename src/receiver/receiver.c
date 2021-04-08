@@ -8,8 +8,7 @@
 #include "ui/led_ui.h"
 #include "utils/delay.h"
 
-static byte buffer[PAYLOAD_LENGTH] = {
-    'O', 'K'};
+static byte buffer[PAYLOAD_LENGTH] = {PAYLOAD_RECEIVER_ACK_HEADER};
 static struct Payload payload;
 
 void PairWithController()
