@@ -1,61 +1,52 @@
 #include <8052.h>
 
-#include "common.h"
 #include "datatype.h"
-#include "drv/buzzer.h"
-#include "drv/nrf24l01.h"
+#include "rf_comm.h"
 #include "sys/tick.h"
 #include "ui/led_ui.h"
 #include "utils/delay.h"
+#include "utils/utils.h"
 
-static byte buffer[PAYLOAD_LENGTH] = {PAYLOAD_RECEIVER_ACK_HEADER};
-static struct Payload payload;
+enum State {
+    INIT,
+    PAIRING,
+    RECEIVING
+};
 
-void PairWithController()
-{
-    Nrf24l01Size(PAYLOAD_LENGTH);
-    Nrf24l01PairMode();
-    Nrf24l01ChangeTransceiverMode(RX_MODE);
-    while (1) {
-        // 读取接收数据
-        if (Nrf24l01BufferRead((byte *)&payload, PAYLOAD_LENGTH) == true) {
-            if (payload.header == PAYLOAD_NEGOTIATION_HEADER) {
-                break;
-            }
-        }
-    }
-
-    Nrf24l01ChangeTransceiverMode(TX_MODE);
-    Nrf24l01BufferWrite(buffer, sizeof(buffer));
-    delay(1);
-
-    Nrf24l01ChangeTransceiverMode(RX_MODE);
-    Nrf24l01WorkMode();
-    Nrf24l01ChangeTransceiverAddress(TX_MODE, payload.address, sizeof(payload.address));
-    Nrf24l01ChangeTransceiverAddress(RX_MODE, payload.address, sizeof(payload.address));
-    BuzzerBeep(250);
-}
+static byte buffer[8];
+static enum State state = INIT;
 
 void main()
 {
+    byte throttle = 0;
+    byte steering = 0;
     LedUIInit();
-    LedUIDisplay("90ABCDEF");
-    RegisterTickProc(LedUITickProc);
+    CommunicationInit();
     SysTickInit();
+    RegisterTickProc(LedUITickProc);
     StartTick();
-    Nrf24l01Init();
+    state = PAIRING;
     PairWithController();
-    while (1) {
-        if (Nrf24l01BufferRead((byte *)&payload, PAYLOAD_LENGTH) == true) {
-            if (payload.header == PAYLOAD_CONTROL_DATA_HEADER) {
-                buffer[0] = (payload.throttle / 100) + '0';
-                buffer[1] = ((payload.throttle % 100) / 10) + '0';
-                buffer[2] = (payload.throttle % 10) + '0';
-                buffer[4] = (payload.steering / 100) + '0';
-                buffer[5] = ((payload.steering % 100) / 10) + '0';
-                buffer[6] = (payload.steering % 10) + '0';
+    while (true) {
+        switch (state) {
+        case PAIRING:
+            if (PairWithController() == true) {
+                state = RECEIVING;
+            }
+            break;
+        case RECEIVING:
+            if (ReceiveControlData(&throttle, &steering) == true) {
+                buffer[0] = HUNDREDS_PLACE_CHAR(throttle);
+                buffer[1] = TENS_PLACE_CHAR(throttle);
+                buffer[2] = ONES_PLACE_CHAR(throttle);
+                buffer[4] = HUNDREDS_PLACE_CHAR(steering);
+                buffer[5] = TENS_PLACE_CHAR(steering);
+                buffer[6] = ONES_PLACE_CHAR(steering);
                 LedUIDisplay(buffer);
             }
+            break;
+        default:
+            break;
         }
         delay(5);
     }

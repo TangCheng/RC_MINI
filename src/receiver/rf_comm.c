@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-static byte __code address[5] = {'M', 'I', 'N', 'I', 'V'};
+static byte address[5];
 
 void CommunicationInit()
 {
@@ -20,25 +20,24 @@ void CommunicationInit()
     Nrf24l01Size(PAYLOAD_LENGTH);
 }
 
-bool PairWithReceiver()
+bool PairWithController()
 {
     byte i = 0;
     struct Payload payload;
 
     Nrf24l01PairMode();
-    payload.header = PAYLOAD_NEGOTIATION_HEADER;
-    for (i = 0; i < 5; i++) {
-        payload.address[i] = address[i];
-    }
-
-    Nrf24l01ChangeTransceiverMode(TX_MODE);
-    Nrf24l01BufferWrite((byte *)&payload, PAYLOAD_LENGTH);
-    delay(1);
     Nrf24l01ChangeTransceiverMode(RX_MODE);
-    delay(100);
     if (Nrf24l01BufferRead((byte *)&payload, PAYLOAD_LENGTH) == true) {
-        if (payload.header == PAYLOAD_RECEIVER_ACK_HEADER) {
+        if (payload.header == PAYLOAD_NEGOTIATION_HEADER) {
+            for (i = 0; i < 5; i++) {
+                address[i] = payload.address[i];
+            }
             Nrf24l01ChangeTransceiverMode(TX_MODE);
+            payload.header = PAYLOAD_RECEIVER_ACK_HEADER;
+            Nrf24l01BufferWrite((byte *)&payload, PAYLOAD_LENGTH);
+            delay(1);
+
+            Nrf24l01ChangeTransceiverMode(RX_MODE);
             Nrf24l01WorkMode();
             Nrf24l01ChangeTransceiverAddress(TX_MODE, address, sizeof(address));
             Nrf24l01ChangeTransceiverAddress(RX_MODE, address, sizeof(address));
@@ -49,13 +48,17 @@ bool PairWithReceiver()
     return false;
 }
 
-void SendControlData(byte throttle, byte steering)
+bool ReceiveControlData(byte *throttle, byte *steering)
 {
     struct Payload payload;
-    payload.header = PAYLOAD_CONTROL_DATA_HEADER;
-    payload.throttle = throttle;
-    payload.steering = steering;
-    Nrf24l01BufferWrite((byte *)&payload, PAYLOAD_LENGTH);
+    if (Nrf24l01BufferRead((byte *)&payload, PAYLOAD_LENGTH) == true) {
+        if (payload.header == PAYLOAD_CONTROL_DATA_HEADER) {
+            *throttle = payload.throttle;
+            *steering = payload.steering;
+            return true;
+        }
+    }
+    return false;
 }
 
 #ifdef __cplusplus
