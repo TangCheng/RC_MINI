@@ -1,6 +1,7 @@
 #include "rf_comm.h"
 
 #include <8052.h>
+#include <stdio.h>
 
 #include "common.h"
 #include "datatype.h"
@@ -51,6 +52,9 @@ bool PairWithController()
 bool ReceiveControlData(byte *throttle, byte *steering)
 {
     struct Payload payload;
+    if (throttle == NULL || steering == NULL) {
+        return false;
+    }
     if (Nrf24l01BufferRead((byte *)&payload, PAYLOAD_LENGTH) == true) {
         if (payload.header == PAYLOAD_CONTROL_DATA_HEADER) {
             *throttle = payload.throttle;

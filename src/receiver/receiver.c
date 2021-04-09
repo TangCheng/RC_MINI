@@ -23,7 +23,7 @@ void main()
     LedUIInit();
     CommunicationInit();
     SysTickInit();
-    RegisterTickProc(LedUITickProc);
+    RegisterTickProc(0, LedUITickProc);
     StartTick();
     state = PAIRING;
     PairWithController();
@@ -36,12 +36,14 @@ void main()
             break;
         case RECEIVING:
             if (ReceiveControlData(&throttle, &steering) == true) {
-                buffer[0] = HUNDREDS_PLACE_CHAR(throttle);
-                buffer[1] = TENS_PLACE_CHAR(throttle);
-                buffer[2] = ONES_PLACE_CHAR(throttle);
-                buffer[4] = HUNDREDS_PLACE_CHAR(steering);
-                buffer[5] = TENS_PLACE_CHAR(steering);
-                buffer[6] = ONES_PLACE_CHAR(steering);
+                buffer[0] = ' ';
+                buffer[1] = HUNDREDS_PLACE_CHAR(throttle);
+                buffer[2] = TENS_PLACE_CHAR(throttle);
+                buffer[3] = ONES_PLACE_CHAR(throttle);
+                buffer[4] = ' ';
+                buffer[5] = HUNDREDS_PLACE_CHAR(steering);
+                buffer[6] = TENS_PLACE_CHAR(steering);
+                buffer[7] = ONES_PLACE_CHAR(steering);
                 LedUIDisplay(buffer);
             }
             break;

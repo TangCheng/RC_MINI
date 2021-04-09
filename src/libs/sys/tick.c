@@ -4,36 +4,30 @@
 #include <stdio.h>
 
 #include "datatype.h"
-#include "utils/list.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #define MAX_TICK_PROC 5
-#define TICK 2  // milliseconds
-// @12MHz, 12T, 2^16 - tick * 1000
-#define TIMER_VALUE ((1L << 16) - (TICK * 1000L))
+// @12MHz, 6T, 2^16 - tick * 2000
+#define TIMER_VALUE ((1L << 16) - ((TICK << 11) - (TICK << 5) - (TICK << 4)))
 #define TIMER_HIGH_VALUE (byte)(TIMER_VALUE >> 8)
 #define TIMER_LOW_VALUE (byte)(TIMER_VALUE & 0x00FF)
 
-static List *tickProcs = NULL;
-static byte tickProcCount = 0;
-
-void CallTickProc(void **x, void *cl)
-{
-    if (x != NULL && *x != NULL) {
-        TickProc tickProc = (TickProc)*x;
-        tickProc();
-    }
-    cl = cl;
-}
+static TickProc tickProcs[MAX_TICK_PROC] = {
+    NULL, NULL, NULL, NULL, NULL};
 
 inline void TickTimerProc()
 {
+    byte i = 0;
     TH0 = TIMER_HIGH_VALUE;
     TL0 = TIMER_LOW_VALUE;
-    List_map(tickProcs, CallTickProc, NULL);
+    for (i = 0; i < MAX_TICK_PROC; i++) {
+        if (tickProcs[i] != NULL) {
+            tickProcs[i]();
+        }
+    }
 }
 
 void SysTickInit()
@@ -47,29 +41,21 @@ void SysTickInit()
     EA = 1;
 }
 
-bool RegisterTickProc(TickProc tickProc)
+bool RegisterTickProc(byte index, TickProc tickProc)
 {
-    if (tickProcCount >= MAX_TICK_PROC) {
+    if (index >= MAX_TICK_PROC || tickProc == NULL) {
         return false;
     }
-
-    if (tickProc == NULL) {
-        return false;
-    }
-
-    tickProcs = List_push(tickProcs, (void *)tickProc);
-    tickProcCount++;
+    tickProcs[index] = tickProc;
     return true;
 }
 
-bool UnregisterTickProc(TickProc tickProc)
+bool UnregisterTickProc(byte index)
 {
-    if (tickProc == NULL) {
+    if (index >= MAX_TICK_PROC) {
         return false;
     }
-
-    tickProcs = List_remove(tickProcs, (void *)tickProc);
-    tickProcCount--;
+    tickProcs[index] = NULL;
     return true;
 }
 

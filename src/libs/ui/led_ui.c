@@ -1,7 +1,6 @@
 #include "ui/led_ui.h"
 
 #include <8052.h>
-#include <string.h>
 
 #include "drv/seven_segment_led.h"
 #include "utils/delay.h"
@@ -17,8 +16,8 @@ extern "C" {
 #define LED_SELECT_LATCH_DISABLE 0
 #define LED_AMOUNT 8
 
-byte content[LED_AMOUNT] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
-byte index = 0;
+static byte content[LED_AMOUNT] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
+static byte index = 0;
 
 void LedUITickProc()
 {
@@ -29,8 +28,9 @@ void LedUITickProc()
     LED_SELECT = ~(0x01 << index);
     LED_SELECT_LATCH = LED_SELECT_LATCH_ENABLE;
     LED_SELECT_LATCH = LED_SELECT_LATCH_DISABLE;
-    index++;
-    index %= LED_AMOUNT;
+    if (++index >= LED_AMOUNT) {
+        index = 0;
+    }
 }
 
 void LedUIInit()
@@ -41,7 +41,10 @@ void LedUIInit()
 
 void LedUIDisplay(byte *string)
 {
-    memcpy(content, string, LED_AMOUNT);
+    byte i = 0;
+    for (i = 0; i < LED_AMOUNT; i++) {
+        content[i] = string[i];
+    }
 }
 
 #ifdef __cplusplus
