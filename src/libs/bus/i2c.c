@@ -8,7 +8,7 @@ extern "C" {
 
 #define SCL P2_1
 #define SDA P2_0
-#define NOP __asm nop __endasm
+#define NOP __asm nop; nop __endasm
 
 void I2cStart()
 {

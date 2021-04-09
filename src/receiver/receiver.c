@@ -1,6 +1,7 @@
 #include <8052.h>
 
 #include "datatype.h"
+#include "drv/pca9685.h"
 #include "rf_comm.h"
 #include "sys/tick.h"
 #include "ui/led_ui.h"
@@ -27,6 +28,8 @@ void main()
     StartTick();
     state = PAIRING;
     PairWithController();
+    Pca9685Init();
+    Pca9685SetPwmFrequency(50);
     while (true) {
         switch (state) {
         case PAIRING:
@@ -45,6 +48,7 @@ void main()
                 buffer[6] = TENS_PLACE_CHAR(steering);
                 buffer[7] = ONES_PLACE_CHAR(steering);
                 LedUIDisplay(buffer);
+                Pca9685SetPin(16, steering + 157);
             }
             break;
         default:
