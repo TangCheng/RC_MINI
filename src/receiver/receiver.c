@@ -30,6 +30,7 @@ void main()
     PairWithController();
     Pca9685Init();
     Pca9685SetPwmFrequency(50);
+    Pca9685SetPin(7, 0);
     while (true) {
         switch (state) {
         case PAIRING:
@@ -48,13 +49,17 @@ void main()
                 buffer[6] = TENS_PLACE_CHAR(steering);
                 buffer[7] = ONES_PLACE_CHAR(steering);
                 LedUIDisplay(buffer);
+                if (throttle <= 140) {
+                    byte data = 140 - throttle;
+                    Pca9685SetPin(7,  (data << 3) + (data << 1));
+                }
                 Pca9685SetPin(16, steering + 157);
             }
             break;
         default:
             break;
         }
-        DelayMs(5);
+        DelayMs(1);
     }
 }
 
