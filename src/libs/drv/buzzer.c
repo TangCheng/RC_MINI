@@ -15,7 +15,7 @@ extern "C" {
 void BuzzerBeep(byte beepPeriod)
 {
     BUZZER_CTRL = BUZZER_ON;
-    delay(beepPeriod);
+    DelayMs(beepPeriod);
     BUZZER_CTRL = BUZZER_OFF;
 }
 

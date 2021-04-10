@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-void delay(word milliseconds);
+inline void DelayMs(word milliseconds);
+inline void DelayUs(word useconds);
 
 #ifdef __cplusplus
 }

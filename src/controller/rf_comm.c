@@ -33,9 +33,9 @@ bool PairWithReceiver()
 
     Nrf24l01ChangeTransceiverMode(TX_MODE);
     Nrf24l01BufferWrite((byte *)&payload, PAYLOAD_LENGTH);
-    delay(1);
+    DelayMs(1);
     Nrf24l01ChangeTransceiverMode(RX_MODE);
-    delay(100);
+    DelayMs(100);
     if (Nrf24l01BufferRead((byte *)&payload, PAYLOAD_LENGTH) == true) {
         if (payload.header == PAYLOAD_RECEIVER_ACK_HEADER) {
             Nrf24l01ChangeTransceiverMode(TX_MODE);

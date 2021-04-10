@@ -54,7 +54,7 @@ void main()
         default:
             break;
         }
-        delay(5);
+        DelayMs(5);
     }
 }
 

@@ -36,7 +36,7 @@ bool PairWithController()
             Nrf24l01ChangeTransceiverMode(TX_MODE);
             payload.header = PAYLOAD_RECEIVER_ACK_HEADER;
             Nrf24l01BufferWrite((byte *)&payload, PAYLOAD_LENGTH);
-            delay(1);
+            DelayMs(1);
 
             Nrf24l01ChangeTransceiverMode(RX_MODE);
             Nrf24l01WorkMode();

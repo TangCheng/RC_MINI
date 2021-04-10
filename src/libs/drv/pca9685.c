@@ -74,7 +74,7 @@ static bool Pca9685ReadRegister(byte addr, byte *data)
     }
     *data = I2cReceiveByte();  // 读取数据0
 
-    I2cAcknowledge(true);  // 发送应答信号
+    I2cAcknowledge(false);  // 发送非应答信号
     I2cStop();             // 结束总线
     return ack;
 }
@@ -102,6 +102,7 @@ static bool Pca9685WriteRegister(byte addr, byte data)
 void Pca9685Init()
 {
     Pca9685WriteRegister(PCA9685_MODE1, 0x00);
+    DelayMs(5);
 }
 
 void Pca9685SetPwmFrequency(byte frequency)
@@ -115,20 +116,25 @@ void Pca9685SetPwmFrequency(byte frequency)
     }
 
     byte pca9685Mode = 0;
+    LedUIDisplay("       A");
     if (Pca9685ReadRegister(PCA9685_MODE1, &pca9685Mode) == false) {
         return;
     }
+    LedUIDisplay("       B");
     if (Pca9685WriteRegister(PCA9685_MODE1, (pca9685Mode & ~MODE1_RESTART) | MODE1_SLEEP) == false) {
         return;
     }
+    LedUIDisplay("       C");
     if (Pca9685WriteRegister(PCA9685_PRESCALE, prescale) == false) {
         return;
     }
+    LedUIDisplay("       D");
     if (Pca9685WriteRegister(PCA9685_MODE1, pca9685Mode) == false) {
         return;
     }
-    // delay(5);
-    // Pca9685WriteRegister(PCA9685_MODE1, pca9685Mode | MODE1_RESTART | MODE1_AI);
+    LedUIDisplay("       E");
+    DelayMs(5);
+    Pca9685WriteRegister(PCA9685_MODE1, pca9685Mode | MODE1_RESTART);
 }
 
 void Pca9685Reset()
@@ -139,10 +145,10 @@ void Pca9685Reset()
     }
     if (pca9685Mode & MODE1_RESTART) {
         Pca9685WriteRegister(PCA9685_MODE1, pca9685Mode | MODE1_SLEEP);
-        delay(1);
+        DelayMs(1);
     }
     Pca9685WriteRegister(PCA9685_MODE1, MODE1_RESTART);
-    delay(10);
+    DelayMs(10);
 }
 
 static void Pca9685SetPwm(byte registerOffset, word on, word off)
